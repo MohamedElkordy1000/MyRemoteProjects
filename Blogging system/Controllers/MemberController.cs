@@ -21,7 +21,7 @@ namespace Blogging_system.Controllers
         // GET: Member/IndexArticles
         public ActionResult IndexArticles()
         {
-            var articles = db.Articles.Include(a => a.Category);
+            var articles = db.Articles.Include(a => a.Category).Include(a=>a.Comments);
             return View(articles.ToList());
         }
         public ActionResult CustomSearch(string search_param, string searchtext)
@@ -47,6 +47,8 @@ namespace Blogging_system.Controllers
             }
             return View("IndexArticles", articles);
         }
+
+       
 
 
     }

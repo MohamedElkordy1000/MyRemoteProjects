@@ -23,7 +23,12 @@ namespace Blogging_system.Models
         [Key]
         [Column(Order = 3)]
         public DateTime CommentDate { get; set; }
-      
+        [Required]
+        [Display(Name ="Comment")]
+        [StringLength(500, MinimumLength = 1, ErrorMessage = "Comment should be between 1-500 characters")]
+        public string CommentText { get; set; }
+
+
         //navigation
         public virtual ApplicationUser Member { get; set; }
         public virtual Article Article { get; set; }

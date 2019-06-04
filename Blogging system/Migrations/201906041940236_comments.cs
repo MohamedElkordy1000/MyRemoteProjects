@@ -1,0 +1,18 @@
+namespace Blogging_system.Migrations
+{
+    using System;
+    using System.Data.Entity.Migrations;
+    
+    public partial class comments : DbMigration
+    {
+        public override void Up()
+        {
+            AddColumn("dbo.Comments", "CommentText", c => c.String(nullable: false, maxLength: 500));
+        }
+        
+        public override void Down()
+        {
+            DropColumn("dbo.Comments", "CommentText");
+        }
+    }
+}

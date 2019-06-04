@@ -1,38 +1,146 @@
-﻿@model IEnumerable<Blogging_system.Models.Article>
+﻿@using Microsoft.AspNet.Identity
+@using Blogging_system.Models
+@model IEnumerable<Blogging_system.Models.Article>
 
 @{
     ViewBag.Title = "Index Articles";
     Layout = "~/Views/Shared/Member.cshtml";
+    string imgsrc = "";
+    string userid="";
+    if (User.Identity.GetUserId() != null)
+    {
+          userid = User.Identity.GetUserId();
+
+    }
+
 }
 
 <center>
-    <h2 style="background-color:antiquewhite"><b >All Article</b></h2>
+    <h2 style="background-color:antiquewhite"><b>All Article</b></h2>
 </center>
 <hr />
 <div class="container">
-    <div class="col-md-12">
+    <div class="col-md-12" >
         @foreach (var item in Model)
         {
-        <center> 
-              <h1>@Html.DisplayFor(modelItem => item.ArticleTitle)</h1>
-        </center>
+            <center>
+                <h1>@Html.DisplayFor(modelItem => item.ArticleTitle)</h1>
+            </center>
             <p>
                 @Html.DisplayFor(modelItem => item.ArticleBody)
             </p>
             <div>
                 <span class="badge">@Html.DisplayFor(modelItem => item.Publish_date)</span>
                 <div class="pull-right">
-                    <span class="label label-info">@Html.DisplayFor(modelItem => item.Category.Category_Name)</span> 
+                    <span class="label label-info">@Html.DisplayFor(modelItem => item.Category.Category_Name)</span>
+                </div>
+            </div>
+
+            <div class="container">
+                <div class="form-group shadow-textarea">
+
+                    <label for="exampleFormControlTextarea6">Enter Your Comment</label>
+                    <textarea class="form-control z-depth-1" style="max-width: 100%;box-shadow:3px 3px 13px" id="exampleFormControlTextarea6" rows="3" placeholder="Write something here..."></textarea>
+                   
+                    <input type="button" class="btn btn-primary" value="Add" onclick="void function() { var commenttext= $("#exampleFormControlTextarea6").val();
+                                                                                     send(@userid,commenttext,@item.Publish_date,@item.ArticleId) }" />
+                </div>
+
+
+            </div>
+
+            <div class="row" >
+                <div class="col-md-12">
+                    <div class="page-header">
+                        <h1><small class="pull-right">@item.Comments.Count comments</small> Comments </h1>
+                    </div>
+
+
+                    <div class="comments-list" id="@item.ArticleId" >
+
+
+                        @foreach (var comment in item.Comments)
+                        {
+
+                            
+                            <div class="media">
+                                <p class="pull-right"><small> @comment.CommentDate  ago</small></p>
+                                <a class="media-left" href="#">
+
+                                    @{byte[] Image = @comment.Member.Image; }
+                                    @if (Image != null)
+                                    {
+                                        var base64 = Convert.ToBase64String(Image);
+                                        imgsrc = string.Format("data:image/jpg;base64,{0}", base64);
+                                    }
+
+
+
+                                    <img alt="Picture" src='@imgsrc' id="profile-image1" class="img-circle" width="20" height="20" style="display:inline-block; cursor:pointer;">
+                                </a>
+                                <div class="media-body">
+
+                                    <h4 class="media-heading user_name">@comment.Member.FullName</h4>
+                                    @comment.CommentText
+                                    <p><small><a href="">Like</a> </small></p>
+                                </div>
+                            </div>
+                        }
+
+
+                    </div>
                 </div>
             </div>
 
             <hr>
         }
     </div>
- </div>
+</div>
 
 
+<script src="~/Scripts/jquery-3.3.1.js"></script>
+<script src="~/Scripts/jquery.signalR-2.4.1.js"></script>
+<script src="signalr/hubs"></script>
+<script>
+    $(function () {
+        hubproxy = $.connection.chat;
+        $.connection.hub.start();
 
+        hubproxy.client.newComment = function (CommentOwnerID, commenttext, publishdate, articleid) {
+            @{ 
+
+                ApplicationDbContext db = new ApplicationDbContext();
+                var user_L = db.Users.SingleOrDefault(u => u.Id == userid);
+                var fullName = user_L.FirstName + " " + user_L.LastName;
+                byte[] commentownerImage = db.Users.SingleOrDefault(e => e.Id == userid).Image;
+                var srcimg = "";
+
+                if (commentownerImage != null)
+                {
+                    var base64 = Convert.ToBase64String(commentownerImage);
+                    srcimg  = string.Format("data:image/jpg;base64,{0}", base64);
+                }
+            }
+
+            string newcommentDesign = `<div class="media">
+                                <p class="pull-right"><small>`+ publishdate +`ago</small></p>
+                                <a class="media-left" href="#">`+ `<img alt="Picture" src='` + imgsrc +
+                                `' id="profile-image1" class="img-circle" width="20" height="20" style="display:inline-block; cursor:pointer;">
+                                </a>
+                                <div class="media-body">
+                                    <h4 class="media-heading user_name">`+ @fullName + `</h4>` + commenttext
+                                    +`<p><small><a href="">Like</a> </small></p>
+                                </div>
+                            </div>`;
+            //$("ul").append("<li>" + n + " : " + m + "</li>");
+            $("articleid").append(newcommentDesign);
+        }
+    });
+
+    function send(CommentOwnerID, commenttext, publishdate, articleid) {
+        hubproxy.server.sendComment(CommentOwnerID, commenttext,publishdate, articleid);
+    };
+</script>
 
 
 
