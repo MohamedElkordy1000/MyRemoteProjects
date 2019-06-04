@@ -18,6 +18,7 @@
 10- admin can add Article then classify to category
  
 ---------------------------------------------------------------
+
 ++vistor can  search with category / year of article
 ++vistor can list articles
 ++I  intend to make Comment as Real time with signal R but I see Email  So late after 1Day  so I  Hav'nt any time to  exept 1 anthor day 
